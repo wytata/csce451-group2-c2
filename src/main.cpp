@@ -1,5 +1,6 @@
 #include <iostream>
 #include "detection.h"
+#include "dhexchange.h"
 
 int main (int argc, char *argv[]) {
     if (detectVM()) {
@@ -8,5 +9,6 @@ int main (int argc, char *argv[]) {
         std::cout << "You are NOT in a VM" << std::endl;
     }
     
+    manualDHExchange();
     return 0;
 }
