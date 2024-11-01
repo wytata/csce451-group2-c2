@@ -5,6 +5,8 @@
 #include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <openssl/err.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 void handleErrors() {
     ERR_print_errors_fp(stderr);
@@ -50,6 +52,17 @@ int main() {
     decryptedFile.close();
 
     std::cout << "Decryption complete. Decrypted binary saved to inner.decrypted" << std::endl;
+
+    pid_t pid = fork();
+    if (pid == -1) {
+        std::cout << "Fork failed" << std::endl;
+        exit(1);
+    } else if (pid == 0) {
+        execv("./inner.decrypted", NULL);
+    } else {
+        wait(NULL);
+        //waitpid(layer2_pid, NULL, 0);
+    }
 
     return 0;
 }
