@@ -13,16 +13,18 @@
 #endif
 
 // Function to create a deletion script that runs independently
-void selfDelete() {
+void selfDelete(const std::string& execName) {
     std::ofstream script("delete_self.sh");
     script << "#!/bin/bash\n";
     script << "sleep 2\n";  // Delay to ensure the program has fully terminated
     script << "rm -f Self-Terminate.cpp\n";  // Delete the source file
-    script << "rm -f ./a.out\n";  // Delete the executable (or whatever it is called)
+    script << "rm -f \"" << execName << "\"\n";  // Delete the executable file
     script << "rm -- \"$0\"\n";  // Delete this script itself
     script.close();
+
     // Make the script executable
     chmod("delete_self.sh", S_IRWXU);
+
     // Fork a new process to run the deletion script in the background
     if (fork() == 0) {
         // Run the deletion script and wait until the main process exits
@@ -56,6 +58,7 @@ bool isDebuggerActive() {
     return false;  // Platform not supported
 #endif
 }
+
 // Cross-platform virtual machine detection using CPUID
 bool isVirtualMachine() {
 #ifdef _WIN32
@@ -76,27 +79,27 @@ bool isVirtualMachine() {
 #endif
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    std::string execName = argv[0];  // Get the name of the executable
     // Check if a debugger is present
     if (isDebuggerActive()) {
-        selfDelete();
+        selfDelete(execName);
         exit(1);
     }
     // Check if running inside a virtual machine
     if (isVirtualMachine()) {
-        selfDelete();
+        selfDelete(execName);
         exit(1);
     }
-
 
     // Simulate some work
     // Your actual program logic can be placed here
 
-    
+
 
 
 
     // After the program finishes, self-delete and delete the source file
-    selfDelete();
+    selfDelete(execName);
     return 0;
 }
