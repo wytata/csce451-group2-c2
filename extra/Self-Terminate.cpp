@@ -1,60 +1,101 @@
-#include <windows.h>
 #include <iostream>
 #include <fstream>
-#include <intrin.h>
+#include <cstdlib>
+#include <cstring>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
-// Check if a debugger is attached using IsDebuggerPresent
-bool isDebuggerActive() {
-    return IsDebuggerPresent();
-}
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <sys/ptrace.h>
+#endif
 
-// Check for the presence of a virtual machine using CPUID instruction
-bool isVirtualMachine() {
-    int cpuInfo[4] = { -1 };
-    __cpuid(cpuInfo, 1);  // CPU info function 1
-
-    bool vmDetected = (cpuInfo[2] >> 31) & 1;  // Check the 31st bit in ECX for the hypervisor flag
-    return vmDetected;
-}
-
-// Self-terminate by launching a batch file to delete the executable
+// Function to create a deletion script that runs independently
 void selfDelete() {
-    char tempPath[MAX_PATH];
-    GetTempPath(MAX_PATH, tempPath);
-    char batchFile[MAX_PATH];
-    GetTempFileName(tempPath, "del", 0, batchFile);
+    std::ofstream script("delete_self.sh");
+    script << "#!/bin/bash\n";
+    script << "sleep 2\n";  // Delay to ensure the program has fully terminated
+    script << "rm -f Self-Terminate.cpp\n";  // Delete the source file
+    script << "rm -f ./a.out\n";  // Delete the executable (or whatever it is called)
+    script << "rm -- \"$0\"\n";  // Delete this script itself
+    script.close();
 
-    std::ofstream batch(batchFile);
-    batch << ":Repeat\n";
-    batch << "del \"" << __argv[0] << "\"\n";  // Try to delete the executable
-    batch << "if exist \"" << __argv[0] << "\" goto Repeat\n";
-    batch << "del \"%0\"\n";  // Delete the batch file itself
-    batch.close();
+    // Make the script executable
+    chmod("delete_self.sh", S_IRWXU);
 
-    // Execute the batch file in hidden mode
-    ShellExecute(NULL, "open", batchFile, NULL, NULL, SW_HIDE);
+    // Fork a new process to run the deletion script in the background
+    if (fork() == 0) {
+        // Run the deletion script and wait until the main process exits
+        execl("/bin/sh", "sh", "-c", "./delete_self.sh", (char *) NULL);
+        exit(0);
+    }
+}
+
+// Cross-platform debugger detection
+bool isDebuggerActive() {
+#ifdef _WIN32
+    return IsDebuggerPresent();  // Windows API
+#elif __linux__
+    std::ifstream statusFile("/proc/self/status");
+    std::string line;
+    while (std::getline(statusFile, line)) {
+        if (line.find("TracerPid") != std::string::npos) {
+            int tracerPid = std::stoi(line.substr(line.find_last_of("\t ") + 1));
+            if (tracerPid != 0) {
+                return true;  // A debugger is attached
+            }
+        }
+    }
+    return false;
+#elif __APPLE__
+    if (ptrace(PT_DENY_ATTACH, 0, 0, 0) == -1) {
+        return true;  // Deny ptrace, means a debugger is likely attached
+    }
+    return false;
+#else
+    return false;  // Platform not supported
+#endif
+}
+
+// Cross-platform virtual machine detection using CPUID
+bool isVirtualMachine() {
+#ifdef _WIN32
+    int cpuInfo[4];
+    __cpuid(cpuInfo, 1);
+    bool vmDetected = (cpuInfo[2] >> 31) & 1;  // Check hypervisor flag in ECX
+    return vmDetected;
+#elif defined(__x86_64__) || defined(__i386__)
+    unsigned int eax, ebx, ecx, edx;
+    eax = 1;
+    __asm__ volatile ("cpuid"
+                      : "=a"(eax), "=b"(ebx), "=c"(ecx), "=d"(edx)
+                      : "a"(eax));
+    bool vmDetected = (ecx >> 31) & 1;  // Check hypervisor flag in ECX
+    return vmDetected;
+#else
+    return false;  // Unsupported CPU architecture
+#endif
 }
 
 int main() {
-    std::cout << "Starting program..." << std::endl;
-
     // Check if a debugger is present
     if (isDebuggerActive()) {
-        std::cout << "Debugger detected! Terminating program..." << std::endl;
         selfDelete();
         exit(1);
     }
 
     // Check if running inside a virtual machine
     if (isVirtualMachine()) {
-        std::cout << "Virtual machine detected! Terminating program..." << std::endl;
         selfDelete();
         exit(1);
     }
 
-    std::cout << "No debugger or virtual machine detected. Program continues..." << std::endl;
-    
-    // Rest of your code here...
-    
+    // Simulate some work
+    // Your actual program logic can be placed here
+
+    // After the program finishes, self-delete and delete the source file
+    selfDelete();
     return 0;
 }
