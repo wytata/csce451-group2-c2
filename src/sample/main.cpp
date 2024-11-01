@@ -7,11 +7,7 @@
 #include <openssl/err.h>
 #include <unistd.h>
 #include <sys/wait.h>
-
-void handleErrors() {
-    ERR_print_errors_fp(stderr);
-    abort();
-}
+#include "crypto.h"
 
 int main() {
     // The key and IV from OpenSSL generation
@@ -24,26 +20,8 @@ int main() {
     std::vector<unsigned char> ciphertext((std::istreambuf_iterator<char>(encryptedFile)), std::istreambuf_iterator<char>());
     encryptedFile.close();
 
-    // Buffer for the decrypted text
-    std::vector<unsigned char> plaintext(ciphertext.size());
-
-    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-    if (!ctx) handleErrors();
-
-    if (1 != EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv)) handleErrors();
-
-    int len;
-    int plaintext_len;
-
-    // Decrypt the ciphertext
-    if (1 != EVP_DecryptUpdate(ctx, plaintext.data(), &len, ciphertext.data(), ciphertext.size())) handleErrors();
-    plaintext_len = len;
-
-    // Finalize the decryption
-    if (1 != EVP_DecryptFinal_ex(ctx, plaintext.data() + len, &len)) handleErrors();
-    plaintext_len += len;
-
-    EVP_CIPHER_CTX_free(ctx);
+    std::vector<unsigned char> plaintext = decrypt(ciphertext.data(), ciphertext.size(), key, iv);
+    int plaintext_len = plaintext.size();
 
     // Write the decrypted text to a file
     std::ofstream decryptedFile("inner.decrypted", std::ios::binary);
