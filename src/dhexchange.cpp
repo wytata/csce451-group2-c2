@@ -21,10 +21,11 @@ int manualDHExchange() {
     std::srand(std::time(0)); 
 
     std::cout << "(g, p) = (" << std::to_string(gen) << ", " << std::to_string(prime) << ")" << std::endl;
-    int our_private_key = std::rand() % prime;
-    std::cout << "Our private: " << std::to_string(our_private_key) << std::endl;
+
+    unsigned int our_private_key = std::rand() % prime;
     unsigned int our_public = power(gen, gen, our_private_key, prime);
     std::cout << "Here's our public key, have fun: " << std::to_string(our_public) << std::endl;
+    std::cout << "Your turn! Give me your public key: ";
 
     unsigned int alice_exchange;
     std::cin >> alice_exchange;
@@ -34,7 +35,6 @@ int manualDHExchange() {
     }
 
     unsigned int shared_secret = power(alice_exchange, alice_exchange, our_private_key, prime);
-    std::cout << "Shared secret: " << std::to_string(shared_secret) << std::endl;
 
-    return 0;
+    return shared_secret;
 }
