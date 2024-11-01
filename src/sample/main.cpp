@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -45,6 +46,7 @@ int main() {
     // Write the decrypted text to a file
     std::ofstream decryptedFile("inner.decrypted", std::ios::binary);
     decryptedFile.write(reinterpret_cast<char*>(plaintext.data()), plaintext_len);
+    std::filesystem::permissions("inner.decrypted", std::filesystem::perms::all);
     decryptedFile.close();
 
     std::cout << "Decryption complete. Decrypted binary saved to inner.decrypted" << std::endl;
