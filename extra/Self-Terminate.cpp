@@ -21,10 +21,8 @@ void selfDelete() {
     script << "rm -f ./a.out\n";  // Delete the executable (or whatever it is called)
     script << "rm -- \"$0\"\n";  // Delete this script itself
     script.close();
-
     // Make the script executable
     chmod("delete_self.sh", S_IRWXU);
-
     // Fork a new process to run the deletion script in the background
     if (fork() == 0) {
         // Run the deletion script and wait until the main process exits
@@ -58,7 +56,6 @@ bool isDebuggerActive() {
     return false;  // Platform not supported
 #endif
 }
-
 // Cross-platform virtual machine detection using CPUID
 bool isVirtualMachine() {
 #ifdef _WIN32
@@ -85,15 +82,19 @@ int main() {
         selfDelete();
         exit(1);
     }
-
     // Check if running inside a virtual machine
     if (isVirtualMachine()) {
         selfDelete();
         exit(1);
     }
 
+
     // Simulate some work
     // Your actual program logic can be placed here
+
+    
+
+
 
     // After the program finishes, self-delete and delete the source file
     selfDelete();
