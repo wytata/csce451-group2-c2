@@ -1,6 +1,7 @@
 # Compiler and flags
 CXX := g++
-CXXFLAGS := -Wall -Wextra -O2 -std=c++17
+CXXFLAGS := -O2 -std=c++17
+DEPFLAGS := -lssl -lcrypto
 
 # Directories
 SRC_DIR := src
@@ -18,12 +19,12 @@ all: $(TARGET)
 # Link objects to create the executable
 $(TARGET): $(OBJS)
 	@mkdir -p $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(DEPFLAGS)
 
 # Compile source files to object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@ $(DEPFLAGS)
 
 # Clean up
 clean:
