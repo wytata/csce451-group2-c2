@@ -1,6 +1,6 @@
 # Compiler and flags
 CXX := g++
-CXXFLAGS := -O2 -std=c++17
+CXXFLAGS := -O2 -g -std=c++17
 DEPFLAGS := -lssl -lcrypto
 
 # Directories

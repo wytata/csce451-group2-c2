@@ -26,12 +26,7 @@ int main (int argc, char *argv[]) {
 
     // exit(0);
 
-    const unsigned char PW[] = "PASSWORD";
-    
-
-    std::vector<uint8_t> dec = aes_decrypt(howdy_enc, howdy_enc_len, PW);
-
-
+    std::vector<uint8_t> dec = aes_decrypt(howdy_enc, howdy_enc_len, "PASSWORD");
     printf("Output: %s\n", dec.data());
 
     for(;;);
