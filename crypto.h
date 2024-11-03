@@ -54,12 +54,12 @@ std::vector<uint8_t> aes_decrypt(const uint8_t* message, size_t message_len, con
     return plaintext;
 }
 
-// std::vector<uint8_t> sha256(const std::string &str)
-// {
-//     std::vector<uint8_t> hash(SHA256_DIGEST_LENGTH);
-//     SHA256_CTX sha256;
-//     SHA256_Init(&sha256);
-//     SHA256_Update(&sha256, str.c_str(), str.size());
-//     SHA256_Final(hash.data(), &sha256);
-//     return hash;
-// }
+std::vector<uint8_t> sha256(const std::string &str)
+{
+    std::vector<uint8_t> hash(SHA256_DIGEST_LENGTH);
+    SHA256_CTX sha256;
+    SHA256_Init(&sha256);
+    SHA256_Update(&sha256, str.c_str(), str.size());
+    SHA256_Final(hash.data(), &sha256);
+    return hash;
+}

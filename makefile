@@ -3,32 +3,25 @@ CXX := g++
 CXXFLAGS := -O2 -g -std=c++17
 DEPFLAGS := -lssl -lcrypto
 
-# Directories
-SRC_DIR := src
-OBJ_DIR := obj
-BIN_DIR := bin
-
-# Files
-SRCS := $(wildcard $(SRC_DIR)/*.cpp)
-OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRCS))
-TARGET := $(BIN_DIR)/app
-
 # Default target
-all: $(TARGET)
+all: layer1 layer2_3.enc
 
-# Link objects to create the executable
-$(TARGET): $(OBJS)
-	@mkdir -p $(BIN_DIR)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(DEPFLAGS)
+detection.o: detection.cpp
+	$(CXX) $(CXXFLAGS) -c detection.cpp -o detection.o
 
-# Compile source files to object files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(OBJ_DIR)
-	$(CXX) $(CXXFLAGS) -c $< -o $@ $(DEPFLAGS)
+dhexchange.o: dhexchange.cpp
+	$(CXX) $(CXXFLAGS) -c dhexchange.cpp -o dhexchange.o
+
+layer1: layer1.cpp crypto.h
+	$(CXX) $(CXXFLAGS) layer1.cpp -o layer1 $(DEPFLAGS)
+
+layer2_3.enc: layer2_3.cpp crypto.h dhexchange.o
+	$(CXX) $(CXXFLAGS) layer2_3.cpp dhexchange.o -o layer2_3 $(DEPFLAGS)
+	openssl enc -aes-256-cbc -in layer2_3 -out layer2_3.enc -pass pass:abcde
 
 # Clean up
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR)
+	rm -rf *.0 *.enc *.dec layer1 layer2_3
 
 # Phony targets
 .PHONY: all clean
