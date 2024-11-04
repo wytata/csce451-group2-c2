@@ -18,7 +18,7 @@ void handleErrors() {
 
 
 // Encrypted with  openssl enc -aes-256-cbc -p -in howdy.txt -out howdy.enc -k PASSWORD
-std::vector<uint8_t> aes_decrypt(const uint8_t* message, size_t message_len, const std::string& password)
+std::vector<uint8_t> aes_decrypt(const uint8_t* message, size_t message_len, const uint8_t* passwd, const size_t passwd_len)
 {
     const uint8_t* salt = message + 8;
     const uint8_t* ciphertext = salt + 8;
@@ -26,8 +26,13 @@ std::vector<uint8_t> aes_decrypt(const uint8_t* message, size_t message_len, con
 
     // Key and IV generation using EVP_BytesToKey
     uint8_t key[32], iv[16];
-    int err = EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha256(), salt, (const uint8_t*)password.c_str(), password.size(), 1, key, iv);
+    int err = EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha256(), salt, passwd, passwd_len, 1, key, iv);
     if (!err) handleErrors();
+
+    // for (uint8_t byte : key) printf("%X", byte);
+    // printf("\n");
+    // for (uint8_t byte : iv) printf("%X", byte);
+    // printf("\n");
 
     // Buffer for the decrypted text
     std::vector<uint8_t> plaintext(cipher_len);
@@ -50,16 +55,27 @@ std::vector<uint8_t> aes_decrypt(const uint8_t* message, size_t message_len, con
 
     EVP_CIPHER_CTX_free(ctx);
 
+    // crucially important RIP my freetime
+    plaintext.resize(plaintext_len);
+
     
     return plaintext;
 }
 
-std::vector<uint8_t> sha256(const std::string &str)
-{
-    std::vector<uint8_t> hash(SHA256_DIGEST_LENGTH);
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-    SHA256_Update(&sha256, str.c_str(), str.size());
-    SHA256_Final(hash.data(), &sha256);
-    return hash;
+std::vector<uint8_t> aes_decrypt(const uint8_t* message, size_t message_len, const std::string& password) {
+    return aes_decrypt(message, message_len, (const uint8_t*)password.c_str(), password.size());
 }
+
+std::vector<uint8_t> aes_decrypt(const uint8_t* message, size_t message_len, const std::vector<uint8_t>& password) {
+    return aes_decrypt(message, message_len, password.data(), password.size());
+}
+
+// std::vector<uint8_t> sha256(const std::string &str)
+// {
+//     std::vector<uint8_t> hash(SHA256_DIGEST_LENGTH);
+//     SHA256_CTX sha256;
+//     SHA256_Init(&sha256);
+//     SHA256_Update(&sha256, str.c_str(), str.size());
+//     SHA256_Final(hash.data(), &sha256);
+//     return hash;
+// }
