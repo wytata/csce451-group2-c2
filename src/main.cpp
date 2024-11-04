@@ -6,13 +6,6 @@
 #include "MemoryFile.h"
 
 
-int time_based_keygen() {
-    srand(time(0));
-
-    return rand() % 10000 + 1;
-}
-
-
 int main (int argc, char *argv[]) {
     std::cout << "What's the password: ";
     std::string password;
