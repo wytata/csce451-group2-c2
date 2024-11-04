@@ -24,7 +24,7 @@ int main (int argc, char *argv[]) {
 
    // Get decryption key from user, where the key is expected to be encrypted by the user using the shared secret
    std::cout << "Welcome to layer 3. You're almost there!" << std::endl;
-   std::cout << "All I need is the key to decrypt the payload. But I need to make sure I can trust the sender. Please send me the key safely." << std::endl;   
+   std::cout << "All I need is the password to decrypt the payload. But I need to make sure I can trust the sender. Please send me the password safely. (it can have spaces)" << std::endl;   
    std::cout << "Enter the name of the file I can read your encrypted data from: ";
 
    std::string filename;

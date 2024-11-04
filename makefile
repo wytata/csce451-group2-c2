@@ -17,7 +17,7 @@ OPT := -O2
 DEBUGFLAGS := -fno-stack-protector -Wstringop-overflow=0 -Wformat-overflow=0
 INCLUDE := -I$(INCDIR) -I$(COMMON_INC)
 
-CPPFLAGS := -std=c++17 $(INCLUDE) $(OPT) $(DEPFLAGS) # $(DEBUGFLAGS) -m32
+CPPFLAGS := -m32 -std=c++17 $(INCLUDE) $(OPT) $(DEPFLAGS) # $(DEBUGFLAGS) -m32
 LDLIBS := -lssl -lcrypto
 
 
